@@ -19,7 +19,7 @@ int copy_partition(const char* partition, const char* filename);
 int backup_partition(const char *device, const char* backupfile, int stable_mode) {
 
 	if (wait_device(device, stable_mode)) {
-		if (!backup_partition(device, backupfile, stable_mode)) {
+		if (!copy_partition(device, backupfile)) {
 			printf("Backup failed!!\n");
 			return 0;
 		}
