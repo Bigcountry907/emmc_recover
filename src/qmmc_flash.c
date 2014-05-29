@@ -16,10 +16,10 @@
 void write_chunk(const char* file, long int offset, uint8_t *data, int nof_bytes);
 int copy_partition(const char* partition, const char* filename);
 
-int backup_partition(const char *device, const char* backupfile) {
+int backup_partition(const char *device, const char* backupfile, int stable_mode) {
 
-	if (wait_device(device)) {
-		if (!backup_partition(device, backupfile)) {
+	if (wait_device(device, stable_mode)) {
+		if (!backup_partition(device, backupfile, stable_mode)) {
 			printf("Backup failed!!\n");
 			return 0;
 		}
@@ -29,7 +29,7 @@ int backup_partition(const char *device, const char* backupfile) {
 
 }
 
-int flash_part_dd(const char *device, const char* imagefile, int quiet_mode) {
+int flash_part_dd(const char *device, const char* imagefile, int quiet_mode, int stable_mode) {
 
 	if (!check_file(imagefile)) {
 		printf("Cannot read image file %s\n", imagefile);
@@ -41,7 +41,7 @@ int flash_part_dd(const char *device, const char* imagefile, int quiet_mode) {
 		getc(stdin);
 	}
 
-	if (wait_device(device)) {
+	if (wait_device(device, stable_mode)) {
 		char command[256];
 		memset(command, 0x00, 256);
 		sprintf(command, "dd if=%s of=%s bs=2048", imagefile, device);
@@ -56,7 +56,7 @@ int flash_part_dd(const char *device, const char* imagefile, int quiet_mode) {
 	return 0;
 }
 
-int flash_part_chunk(const char *device, const char* imagefile, uint32_t chunk_size, int quiet_mode) {
+int flash_part_chunk(const char *device, const char* imagefile, uint32_t chunk_size, int quiet_mode, int stable_mode) {
 	// Qualcomm High-Speed USB Download Mode is partially blocked, Device has read/write access only few milliseconds
 	struct stat st;
 	uint8_t chunk[chunk_size];
@@ -123,7 +123,7 @@ int flash_part_chunk(const char *device, const char* imagefile, uint32_t chunk_s
 		reset_device_pbl();
 		printf("Reset command sent\n");
 		fflush(stdout);
-		if (wait_device(device)) {
+		if (wait_device(device, stable_mode)) {
 			int wi;
 			write_chunk(device, written, chunk, readed);
 			written += readed;

@@ -50,9 +50,9 @@ int qdload_device_connected(void) {
 
 }
 
-int wait_device(const char* device) {
+int wait_device(const char* device, int stable_mode) {
 
-	if (check_file(device)) {
+	if (check_file(device) && stable_mode == 0) {
 		printf("Device already exists!!\n");
 		printf("Please disconnect device!!\n");
 		return 0;

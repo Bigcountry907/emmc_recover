@@ -40,6 +40,7 @@ void usage() {
 	printf("\t-q | --quiet\n");
 	printf("\t-r | --reboot_pbl\n");
 	printf("\t-H | --hexdump\n");
+	printf("\t-s | --stable\n");
 
 }
 
@@ -50,6 +51,7 @@ int main(int argc, const char **argv, char **env) {
 
 	int chunk_size = 0;
 	int quiet_mode = 0;
+	int stable_mode = 0;
 
 	if (argc <= 1) {
 		usage();
@@ -64,7 +66,8 @@ int main(int argc, const char **argv, char **env) {
 		  gopt_option( 'd', GOPT_ARG,  gopt_shorts( 'd' )	, gopt_longs( "device")),					// Device to use
 		  gopt_option( 'c', GOPT_ARG,  gopt_shorts( 'c' )	, gopt_longs( "chunksize")),				// Chunksize
 		  gopt_option( 'r', 0,  	   gopt_shorts( 'r' )	, gopt_longs( "reboot_pbl")),				// Reboot
-		  gopt_option( 'H', GOPT_ARG,  gopt_shorts( 'H' )	, gopt_longs( "hexdump"))				// Chunksize
+		  gopt_option( 'H', GOPT_ARG,  gopt_shorts( 'H' )	, gopt_longs( "hexdump")),					// Chunksize
+		  gopt_option( 's', 0,         gopt_shorts( 's' )	, gopt_longs( "stable"))					// Stable mode (no disconnect needed)
 	));
 
 	if (options == NULL) {
@@ -117,6 +120,10 @@ int main(int argc, const char **argv, char **env) {
 	if (gopt(options, 'q')) {
 		quiet_mode = 1;
 
+	}
+
+	if (gopt(options, 's') && !gopt(options, 'c')){
+		stable_mode = 1;
 	}
 
 	gopt_arg(options, 'd', &device);
@@ -173,7 +180,7 @@ int main(int argc, const char **argv, char **env) {
 				sleep(1);
 			}
 
-			if (wait_device(device)) {
+			if (wait_device(device, stable_mode)) {
 				if (!read_bytes(device, data, offset1, byte_count)) {
 					gopt_free(options);
 					return EXIT_FAILURE;
@@ -192,7 +199,7 @@ int main(int argc, const char **argv, char **env) {
 		const char* backupfile;
 		gopt_arg(options, 'b', &backupfile);
 
-		backup_partition(device, backupfile);
+		backup_partition(device, backupfile, stable_mode);
 		gopt_free(options);
 		return EXIT_SUCCESS;
 
@@ -207,7 +214,7 @@ int main(int argc, const char **argv, char **env) {
 	if (gopt(options, 'f') && !gopt(options, 'c')) {
 		const char* imagefile;
 		gopt_arg(options, 'f', &imagefile);
-		flash_part_dd(device, imagefile, quiet_mode);
+		flash_part_dd(device, imagefile, quiet_mode, stable_mode);
 		gopt_free(options);
 		return EXIT_SUCCESS;
 
@@ -222,7 +229,7 @@ int main(int argc, const char **argv, char **env) {
 			return EXIT_FAILURE;
 		}
 
-		flash_part_chunk(device, imagefile, chunk_size, quiet_mode);
+		flash_part_chunk(device, imagefile, chunk_size, quiet_mode, stable_mode);
 
 		gopt_free(options);
 		return EXIT_SUCCESS;

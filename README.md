@@ -1,4 +1,4 @@
-emmc_recover 0.3 alpha 4
+emmc_recover 0.4 alpha 1
 ============
 
 usage: 
@@ -12,3 +12,4 @@ emmc_recover [OPTIONS]
 	-q | --quiet
 	-r | --reboot_pbl
 	-H | --hexdump
+	-s | --stable
